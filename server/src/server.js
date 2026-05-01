@@ -8,11 +8,11 @@ const PORT = process.env.PORT || 5000;
 let server;
 
 const startServer = async () => {
-  await connectDB();
-
   server = app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
+
+  await connectDB();
 };
 
 const shutdown = (signal) => {
