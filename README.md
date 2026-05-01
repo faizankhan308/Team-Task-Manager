@@ -69,6 +69,7 @@ Create `server/.env` with the following content:
 PORT=5000
 NODE_ENV=development
 MONGO_URI=mongodb://127.0.0.1:27017/team-task-manager
+# Or use MONGO_URL instead; Railway MongoDB exposes MONGO_URL by default.
 JWT_SECRET=replace-with-a-long-random-secret
 JWT_EXPIRES_IN=7d
 CLIENT_URL=http://localhost:5173
@@ -159,6 +160,8 @@ Express serves both the API and the built React app from a single process, makin
 ```env
 NODE_ENV=production
 MONGO_URI=<your MongoDB connection string>
+# Railway MongoDB alternative:
+# MONGO_URL=${{ Mongo.MONGO_URL }}
 JWT_SECRET=<long random production secret>
 JWT_EXPIRES_IN=7d
 CLIENT_URL=<your deployed app URL>
@@ -173,7 +176,7 @@ npm install --prefix server && npm install --prefix client && npm run build --pr
 5. Set the **start command** to:
 
 ```bash
-npm start
+node server/src/server.js
 ```
 
 In production, Express serves the built React SPA from `client/dist` and handles all non-`/api` routes with `index.html` for client-side routing.
