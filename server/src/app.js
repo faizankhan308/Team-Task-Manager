@@ -14,6 +14,7 @@ import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 
 const app = express();
 
+const isProduction = String(process.env.NODE_ENV).replace(/['"]/g, '') === 'production';
 const allowedOrigin = process.env.CLIENT_URL || 'http://localhost:5173';
 const apiOrigin = process.env.API_URL || process.env.VITE_API_URL;
 const connectSrc = ["'self'"];
@@ -48,7 +49,7 @@ app.use(cors({
     if (!origin) return callback(null, true);
 
     // In development, allow any localhost port
-    if (process.env.NODE_ENV !== 'production' && /^http:\/\/localhost:\d+$/.test(origin)) {
+    if (!isProduction && /^http:\/\/localhost:\d+$/.test(origin)) {
       return callback(null, true);
     }
 
@@ -63,7 +64,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json({ limit: '1mb' }))
-app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+app.use(morgan(isProduction ? 'combined' : 'dev'));
 app.use(
   rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -79,7 +80,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/users', userRoutes);
 
-if (process.env.NODE_ENV === 'production') {
+if (isProduction) {
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
   const clientDistPath = path.resolve(__dirname, '../../client/dist');
