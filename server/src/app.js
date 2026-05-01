@@ -41,14 +41,18 @@ app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, curl, etc.)
     if (!origin) return callback(null, true);
+
     // In development, allow any localhost port
     if (process.env.NODE_ENV !== 'production' && /^http:\/\/localhost:\d+$/.test(origin)) {
       return callback(null, true);
     }
-    // In production, only allow the configured origin
-    if (origin === allowedOrigin) {
+
+    // In production, allow configured origin or any railway.app subdomain
+    const isRailway = origin.endsWith('.railway.app');
+    if (origin === allowedOrigin || isRailway) {
       return callback(null, true);
     }
+
     callback(new Error('Not allowed by CORS'));
   },
   credentials: true
