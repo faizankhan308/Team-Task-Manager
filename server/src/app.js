@@ -22,6 +22,11 @@ if (apiOrigin) {
   connectSrc.push(apiOrigin);
 }
 
+// 1. Health check at the VERY top
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok', service: 'team-task-manager-api' });
+});
+
 app.use(
   helmet({
     contentSecurityPolicy: {
