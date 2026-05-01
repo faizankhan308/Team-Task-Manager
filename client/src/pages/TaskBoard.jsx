@@ -44,14 +44,13 @@ const TaskBoard = () => {
     if (filters.user) params.user = filters.user;
 
     try {
-      const [taskRes, projectRes, userRes] = await Promise.all([
-        api.get('/tasks', { params }),
-        api.get('/projects'),
-        api.get('/users')
-      ]);
+      const requests = [api.get('/tasks', { params }), api.get('/projects')];
+      if (isAdmin) requests.push(api.get('/users'));
+
+      const [taskRes, projectRes, userRes] = await Promise.all(requests);
       setTasks(taskRes.data);
       setProjects(projectRes.data);
-      setUsers(userRes.data);
+      setUsers(userRes?.data || []);
     } catch (err) {
       setError(apiErrorMessage(err));
     } finally {
@@ -115,12 +114,14 @@ const TaskBoard = () => {
               <option key={project._id} value={project._id}>{project.name}</option>
             ))}
           </Select>
-          <Select label="" className="w-40" value={filters.user} onChange={(e) => setFilters({ ...filters, user: e.target.value })}>
-            <option value="">All users</option>
-            {users.map((user) => (
-              <option key={user._id} value={user._id}>{user.name}</option>
-            ))}
-          </Select>
+          {isAdmin && (
+            <Select label="" className="w-40" value={filters.user} onChange={(e) => setFilters({ ...filters, user: e.target.value })}>
+              <option value="">All users</option>
+              {users.map((user) => (
+                <option key={user._id} value={user._id}>{user.name}</option>
+              ))}
+            </Select>
+          )}
           {isAdmin && (
             <Button onClick={() => setIsModalOpen(true)}>
               <Plus size={16} />

@@ -1,3 +1,4 @@
+import BootstrapLock from '../models/BootstrapLock.js';
 import User from '../models/User.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { generateToken } from '../utils/generateToken.js';
@@ -25,8 +26,18 @@ export const signup = asyncHandler(async (req, res) => {
     name,
     email: normalizedEmail,
     password,
-    role: firstUser ? 'admin' : 'member'
+    role: 'member'
   });
+
+  if (firstUser) {
+    try {
+      await BootstrapLock.create({ _id: 'first-admin' });
+      user.role = 'admin';
+      await user.save();
+    } catch (error) {
+      if (error.code !== 11000) throw error;
+    }
+  }
 
   res.status(201).json({
     token: generateToken(user._id),

@@ -77,8 +77,30 @@ export const updateTask = asyncHandler(async (req, res) => {
   task.dueDate = req.body.dueDate ?? task.dueDate;
 
   if (req.user.role === 'admin') {
-    task.assignedUser = req.body.assignedUser ?? task.assignedUser;
-    task.project = req.body.project ?? task.project;
+    const nextProjectId = req.body.project ?? task.project;
+    const nextAssignedUserId = req.body.assignedUser ?? task.assignedUser;
+
+    if (req.body.project || req.body.assignedUser) {
+      const project = await Project.findById(nextProjectId);
+
+      if (!project) {
+        const error = new Error('Project not found');
+        error.statusCode = 404;
+        throw error;
+      }
+
+      const assignedUserId = new mongoose.Types.ObjectId(nextAssignedUserId);
+      const isProjectMember = project.members.some((memberId) => memberId.equals(assignedUserId));
+
+      if (!isProjectMember) {
+        const error = new Error('Assigned user must be a project member');
+        error.statusCode = 422;
+        throw error;
+      }
+    }
+
+    task.assignedUser = nextAssignedUserId;
+    task.project = nextProjectId;
   }
 
   await task.save();

@@ -4,9 +4,11 @@ import { useEffect, useState } from 'react';
 import api from '../api/axios.js';
 import { Loading } from '../components/Loading.jsx';
 import { Select } from '../components/Input.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 import { apiErrorMessage } from '../utils/formatters.js';
 
 const Dashboard = () => {
+  const { isAdmin } = useAuth();
   const [stats, setStats] = useState({ totalTasks: 0, completedTasks: 0, overdueTasks: 0 });
   const [projects, setProjects] = useState([]);
   const [users, setUsers] = useState([]);
@@ -16,15 +18,15 @@ const Dashboard = () => {
 
   useEffect(() => {
     const loadMeta = async () => {
-      const [projectRes, userRes] = await Promise.all([
-        api.get('/projects'),
-        api.get('/users')
-      ]);
+      const requests = [api.get('/projects')];
+      if (isAdmin) requests.push(api.get('/users'));
+
+      const [projectRes, userRes] = await Promise.all(requests);
       setProjects(projectRes.data);
-      setUsers(userRes.data);
+      setUsers(userRes?.data || []);
     };
     loadMeta().catch((err) => setError(apiErrorMessage(err)));
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
     const loadStats = async () => {
@@ -33,7 +35,7 @@ const Dashboard = () => {
 
       const params = {};
       if (filters.project) params.project = filters.project;
-      if (filters.user) params.user = filters.user;
+      if (isAdmin && filters.user) params.user = filters.user;
 
       try {
         const { data } = await api.get('/tasks/stats', { params });
@@ -46,7 +48,7 @@ const Dashboard = () => {
     };
 
     loadStats();
-  }, [filters]);
+  }, [filters, isAdmin]);
 
   const completionRate = stats.totalTasks > 0 ? Math.round((stats.completedTasks / stats.totalTasks) * 100) : 0;
 
@@ -73,17 +75,19 @@ const Dashboard = () => {
               <option key={project._id} value={project._id}>{project.name}</option>
             ))}
           </Select>
-          <Select
-            label=""
-            className="w-full sm:w-48"
-            value={filters.user}
-            onChange={(e) => setFilters({ ...filters, user: e.target.value })}
-          >
-            <option value="">All Users</option>
-            {users.map((user) => (
-              <option key={user._id} value={user._id}>{user.name}</option>
-            ))}
-          </Select>
+          {isAdmin && (
+            <Select
+              label=""
+              className="w-full sm:w-48"
+              value={filters.user}
+              onChange={(e) => setFilters({ ...filters, user: e.target.value })}
+            >
+              <option value="">All Users</option>
+              {users.map((user) => (
+                <option key={user._id} value={user._id}>{user.name}</option>
+              ))}
+            </Select>
+          )}
         </div>
       </section>
 

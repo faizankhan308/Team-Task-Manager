@@ -1,10 +1,9 @@
-import { FolderKanban, LayoutDashboard, ListTodo, LogOut, Search, User, ChevronLeft, ChevronRight, Menu, Moon, Sun } from 'lucide-react';
+import { FolderKanban, LayoutDashboard, ListTodo, LogOut, Search, User, Menu, Moon, Sun } from 'lucide-react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 
 import { useAuth } from '../context/AuthContext.jsx';
 import { useTheme } from '../context/ThemeContext.jsx';
-import { Button } from './Button.jsx';
 
 const links = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -16,7 +15,8 @@ const Layout = () => {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isDesktopCollapsed, setIsDesktopCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const currentLabel = links.find(l => l.to === location.pathname)?.label || 'Workspace';
 
@@ -24,45 +24,44 @@ const Layout = () => {
     <div className="flex h-screen w-full bg-background overflow-hidden text-foreground">
       {/* Sleek Sidebar with Toggle */}
       <aside 
-        className={`flex flex-col border-r border-border bg-surface transition-all duration-300 z-20 ${
-          isCollapsed ? 'w-16' : 'w-64 hidden lg:flex'
-        } ${!isCollapsed && 'absolute lg:relative h-full'}`}
+        className={`fixed inset-y-0 left-0 z-20 flex w-64 flex-col border-r border-border bg-surface transition-all duration-300 lg:relative lg:translate-x-0 ${
+          isMobileOpen ? 'translate-x-0' : '-translate-x-full'
+        } ${isDesktopCollapsed ? 'lg:w-16' : 'lg:w-64'}`}
       >
-        <div className={`h-14 flex items-center border-b border-border ${isCollapsed ? 'justify-center' : 'justify-start px-4 gap-2'}`}>
+        <div className={`h-14 flex items-center border-b border-border justify-start px-4 gap-2 ${isDesktopCollapsed ? 'lg:justify-center lg:px-0' : 'lg:justify-start lg:px-4'}`}>
           <button 
-            onClick={() => setIsCollapsed(!isCollapsed)}
+            onClick={() => setIsDesktopCollapsed(!isDesktopCollapsed)}
             className="hidden lg:flex items-center justify-center h-8 w-8 rounded-md text-foreground-muted hover:bg-surface-hover hover:text-foreground transition-colors shrink-0"
           >
             <Menu size={18} />
           </button>
           
-          {!isCollapsed && (
-            <div className="flex items-center gap-2 overflow-hidden ml-1">
-              <div className="h-6 w-6 rounded bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shrink-0">
-                T
-              </div>
-              <span className="font-semibold tracking-tight whitespace-nowrap">Team Task</span>
+          <div className={`flex items-center gap-2 overflow-hidden ml-1 ${isDesktopCollapsed ? 'lg:hidden' : ''}`}>
+            <div className="h-6 w-6 rounded bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm shrink-0">
+              T
             </div>
-          )}
+            <span className="font-semibold tracking-tight whitespace-nowrap">Team Task</span>
+          </div>
         </div>
         
         <nav className="flex-1 py-6 flex flex-col gap-1 px-3 overflow-y-auto overflow-x-hidden hide-scrollbar">
-          {!isCollapsed && <div className="px-3 mb-2 text-xs font-semibold text-foreground-muted tracking-wider uppercase">Menu</div>}
+          <div className={`px-3 mb-2 text-xs font-semibold text-foreground-muted tracking-wider uppercase ${isDesktopCollapsed ? 'lg:hidden' : ''}`}>Menu</div>
           {links.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
-              title={isCollapsed ? label : ''}
+              title={isDesktopCollapsed ? label : ''}
+              onClick={() => setIsMobileOpen(false)}
               className={({ isActive }) =>
                 `group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
                   isActive 
                     ? 'bg-surface-hover text-foreground' 
                     : 'text-foreground-muted hover:bg-surface-hover/50 hover:text-foreground'
-                } ${isCollapsed ? 'justify-center' : ''}`
+                } ${isDesktopCollapsed ? 'lg:justify-center' : ''}`
               }
             >
               <Icon size={18} className="shrink-0" />
-              {!isCollapsed && <span className="whitespace-nowrap">{label}</span>}
+              <span className={`whitespace-nowrap ${isDesktopCollapsed ? 'lg:hidden' : ''}`}>{label}</span>
             </NavLink>
           ))}
         </nav>
@@ -71,11 +70,11 @@ const Layout = () => {
         <div className="p-3 border-t border-border flex flex-col gap-2 bg-surface">
           <button 
             onClick={logout} 
-            title={isCollapsed ? "Log out" : ""}
-            className={`group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground-muted hover:bg-danger/10 hover:text-danger transition-colors w-full ${isCollapsed ? 'justify-center' : ''}`}
+            title={isDesktopCollapsed ? "Log out" : ""}
+            className={`group flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-foreground-muted hover:bg-danger/10 hover:text-danger transition-colors w-full ${isDesktopCollapsed ? 'lg:justify-center' : ''}`}
           >
             <LogOut size={18} className="shrink-0" />
-            {!isCollapsed && <span className="whitespace-nowrap">Log out</span>}
+            <span className={`whitespace-nowrap ${isDesktopCollapsed ? 'lg:hidden' : ''}`}>Log out</span>
           </button>
         </div>
       </aside>
@@ -87,7 +86,7 @@ const Layout = () => {
           <div className="flex items-center gap-3">
             <button 
               className="lg:hidden text-foreground-muted hover:text-foreground"
-              onClick={() => setIsCollapsed(!isCollapsed)}
+              onClick={() => setIsMobileOpen(true)}
             >
               <Menu size={20} />
             </button>
@@ -102,7 +101,7 @@ const Layout = () => {
             <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md bg-surface border border-border text-xs text-foreground-muted">
               <Search size={14} />
               <span className="w-32">Search...</span>
-              <kbd className="ml-2 font-mono text-[10px] bg-background px-1 rounded border border-border">⌘K</kbd>
+              <kbd className="ml-2 font-mono text-[10px] bg-background px-1 rounded border border-border">Ctrl K</kbd>
             </div>
             
             <div className="flex items-center gap-3 border-l border-border pl-4">
@@ -147,10 +146,10 @@ const Layout = () => {
       </div>
       
       {/* Mobile Sidebar Overlay */}
-      {!isCollapsed && (
+      {isMobileOpen && (
         <div 
           className="fixed inset-0 bg-background/80 backdrop-blur-sm z-10 lg:hidden"
-          onClick={() => setIsCollapsed(true)}
+          onClick={() => setIsMobileOpen(false)}
         />
       )}
     </div>

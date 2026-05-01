@@ -25,9 +25,12 @@ const Projects = () => {
     setLoading(true);
     setError('');
     try {
-      const [projectRes, userRes] = await Promise.all([api.get('/projects'), api.get('/users')]);
+      const requests = [api.get('/projects')];
+      if (isAdmin) requests.push(api.get('/users'));
+
+      const [projectRes, userRes] = await Promise.all(requests);
       setProjects(projectRes.data);
-      setUsers(userRes.data);
+      setUsers(userRes?.data || []);
     } catch (err) {
       setError(apiErrorMessage(err));
     } finally {

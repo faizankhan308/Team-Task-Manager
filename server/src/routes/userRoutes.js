@@ -9,7 +9,7 @@ const router = express.Router();
 
 router.use(protect);
 
-router.get('/', getUsers);
+router.get('/', authorize('admin'), getUsers);
 router.patch(
   '/:id/role',
   authorize('admin'),

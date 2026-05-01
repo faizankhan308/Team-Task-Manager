@@ -15,8 +15,28 @@ import { errorHandler, notFound } from './middleware/errorMiddleware.js';
 const app = express();
 
 const allowedOrigin = process.env.CLIENT_URL || 'http://localhost:5173';
+const apiOrigin = process.env.API_URL || process.env.VITE_API_URL;
+const connectSrc = ["'self'"];
 
-app.use(helmet());
+if (apiOrigin) {
+  connectSrc.push(apiOrigin);
+}
+
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'", "data:", "blob:"],
+        fontSrc: ["'self'", "data:"],
+        connectSrc,
+      },
+    },
+    crossOriginEmbedderPolicy: false,
+  })
+);
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (mobile apps, curl, etc.)
