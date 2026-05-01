@@ -10,6 +10,6 @@ export const errorHandler = (err, _req, res, _next) => {
   res.status(statusCode).json({
     message: err.message || 'Internal server error',
     errors: err.errors || undefined,
-    stack: process.env.NODE_ENV === 'production' ? undefined : err.stack
+    stack: String(process.env.NODE_ENV).replace(/['"]/g, '') === 'production' ? undefined : err.stack
   });
 };
