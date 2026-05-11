@@ -60,8 +60,9 @@ body {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.55);
   backdrop-filter: blur(4px);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 300; padding: 16px;
+  display: flex; align-items: flex-start; justify-content: center;
+  z-index: 300; padding: 20px 16px 32px;
+  overflow: hidden; /* prevent overlay taking scroll — modal handles scrolling */
 }
 
 .modal-content {
@@ -72,8 +73,24 @@ body {
   padding: 32px 36px;
   box-shadow: var(--shadow-modal);
   animation: fadeInUp 0.2s ease-out;
-  max-height: 90vh;
+  max-height: calc(100vh - 48px);
+  box-sizing: border-box;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* Fixed-position fallback: ensure modal is visible and not clipped on problematic viewports */
+/* Apply fixed-position fallback on all viewports when the class is present */
+.modal-content.fallback-fixed {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  width: min(540px, calc(100% - 32px));
+  z-index: 310;
+  max-height: calc(100vh - 40px);
 }
 
 .modal-content h2 {
@@ -223,5 +240,33 @@ body {
 
 @media (max-width: 600px) {
   .form-row { grid-template-columns: 1fr; }
-  .modal-content { padding: 24px 20px; }
+  .modal-overlay {
+    align-items: flex-start;
+    padding: 12px 12px 20px;
+  }
+  .modal-content { padding: 20px; max-height: calc(100vh - 28px); }
+}
+
+@media (max-height: 760px) {
+  .modal-overlay {
+    align-items: flex-start;
+  }
+}
+
+@media (max-height: 640px) {
+  .modal-overlay { align-items: flex-start; padding: 8px; }
+  .modal-content { max-height: calc(100vh - 16px); padding: 16px; border-radius: 10px; }
+}
+
+/* Make overlay scrollable on touch devices */
+.modal-overlay {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Keep modal actions visible by making them sticky when content scrolls */
+.modal-content .modal-actions {
+  position: sticky;
+  bottom: 0;
+  background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0));
+  padding-top: 12px;
 }

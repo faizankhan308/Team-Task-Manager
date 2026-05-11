@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../api/axios';
 import { Plus, Trash2, UserPlus, Calendar, Users } from 'lucide-react';
 import './Projects.css';
@@ -90,7 +91,7 @@ function Projects() {
   };
 
   const canManage = (proj) =>
-    isAdmin || proj.owner?._id === user.id || proj.owner?._id === user._id;
+    isAdmin || proj.owner?._id === user._id;
 
   return (
     <div className="projects-page animate-fade-in">
@@ -131,7 +132,9 @@ function Projects() {
               </tr>
             </thead>
             <tbody>
-              {projects.map(proj => (
+              {projects.map(proj => {
+                if (!proj || !proj.title) return null;
+                return (
                 <tr key={proj._id} className="project-row">
                   <td>
                     <div className="proj-name-cell">
@@ -149,15 +152,18 @@ function Projects() {
                     </div>
                   </td>
                   <td>
-                    <span className={`status-pill status-${proj.status}`}>{proj.status}</span>
+                    <span className={`status-pill status-${proj.status || 'active'}`}>{proj.status || 'active'}</span>
                   </td>
                   <td>
                     <div className="member-stack">
-                      {proj.members?.slice(0, 4).map(m => (
-                        <div key={m._id} className="member-chip" title={m.name}>
-                          {m.name.charAt(0).toUpperCase()}
-                        </div>
-                      ))}
+                      {proj.members?.slice(0, 4).map(m => {
+                        if (!m) return null;
+                        return (
+                          <div key={typeof m === 'string' ? m : m._id} className="member-chip" title={typeof m === 'string' ? 'Member' : (m.name || 'Member')}>
+                            {typeof m === 'string' ? 'M' : ((m.name || 'M').charAt(0).toUpperCase())}
+                          </div>
+                        );
+                      })}
                       {proj.members?.length > 4 && (
                         <div className="member-chip more">+{proj.members.length - 4}</div>
                       )}
@@ -196,16 +202,17 @@ function Projects() {
                     )}
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
       )}
 
       {/* Create Project Modal */}
-      {showModal && (
+      {showModal && createPortal(
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
-          <div className="modal-content">
+          <div className="modal-content fallback-fixed">
             <h2>New Project</h2>
             {error && <div className="error-text">{error}</div>}
             <form onSubmit={handleCreate}>
@@ -249,13 +256,14 @@ function Projects() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Manage Members Modal */}
-      {showMemberModal && selectedProject && (
+      {showMemberModal && selectedProject && createPortal(
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowMemberModal(false)}>
-          <div className="modal-content">
+          <div className="modal-content fallback-fixed">
             <h2>Members — {selectedProject.title}</h2>
             <div className="form-group">
               <label>Current Members</label>
@@ -303,7 +311,8 @@ function Projects() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

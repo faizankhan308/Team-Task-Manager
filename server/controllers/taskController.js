@@ -4,10 +4,17 @@ const { validationResult } = require('express-validator');
 
 const getTasks = async (req, res) => {
   try {
-    const filter =
-      req.user.role === 'admin'
-        ? {}
-        : { $or: [{ assignedTo: req.user._id }, { createdBy: req.user._id }] };
+    let filter = {};
+
+    if (req.user.role !== 'admin') {
+      const userProjects = await Project.find({
+        $or: [{ owner: req.user._id }, { members: req.user._id }],
+      }).select('_id');
+
+      filter = {
+        project: { $in: userProjects.map(project => project._id) },
+      };
+    }
 
     const tasks = await Task.find(filter)
       .populate('project', 'title')
@@ -69,6 +76,21 @@ const getTaskById = async (req, res) => {
       .populate('comments.user', 'name');
 
     if (!task) return res.status(404).json({ message: 'Task not found' });
+
+    if (req.user.role !== 'admin') {
+      const canAccess =
+        task.assignedTo?._id?.toString() === req.user._id.toString() ||
+        task.createdBy?._id?.toString() === req.user._id.toString() ||
+        (await Project.exists({
+          _id: task.project._id,
+          $or: [{ owner: req.user._id }, { members: req.user._id }],
+        }));
+
+      if (!canAccess) {
+        return res.status(403).json({ message: 'Not authorized to view this task' });
+      }
+    }
+
     res.json(task);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -111,6 +133,17 @@ const deleteTask = async (req, res) => {
 
 const getTasksByProject = async (req, res) => {
   try {
+    if (req.user.role !== 'admin') {
+      const canAccess = await Project.exists({
+        _id: req.params.projectId,
+        $or: [{ owner: req.user._id }, { members: req.user._id }],
+      });
+
+      if (!canAccess) {
+        return res.status(403).json({ message: 'Not authorized to view these tasks' });
+      }
+    }
+
     const tasks = await Task.find({ project: req.params.projectId })
       .populate('assignedTo', 'name email')
       .populate('createdBy', 'name email')

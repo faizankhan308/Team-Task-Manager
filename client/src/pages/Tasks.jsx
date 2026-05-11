@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import api from '../api/axios';
 import { Plus, ChevronDown, Trash2, Clock, Circle } from 'lucide-react';
 import './Tasks.css';
@@ -268,9 +269,9 @@ function Tasks() {
         </table>
       </div>
 
-      {showModal && (
+      {showModal && createPortal(
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowModal(false)}>
-          <div className="modal-content">
+          <div className="modal-content fallback-fixed">
             <h2>New Task</h2>
             {error && <div className="error-text">{error}</div>}
             <form onSubmit={handleCreate}>
@@ -361,7 +362,8 @@ function Tasks() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

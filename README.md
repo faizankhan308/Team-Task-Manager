@@ -2,7 +2,6 @@
 
 A full-stack task and project management web application built with the MERN stack. Teams can manage projects, assign tasks, track progress, and collaborate with role-based access control.
 
-**Live Portfolio:** [Insha Quamar](https://got-theme-portfolio11.onrender.com)
 
 ---
 
@@ -154,8 +153,6 @@ Open your browser at `http://localhost:5173`
 
 ---
 
-## Author
 
-**Insha Quamar**
-- Portfolio: [got-theme-portfolio11.onrender.com](https://got-theme-portfolio11.onrender.com)
-- GitHub: [InshaQuamar](https://github.com/InshaQuamar)
+
+

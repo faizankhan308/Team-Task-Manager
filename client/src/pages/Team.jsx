@@ -18,7 +18,7 @@ function Team() {
   })();
 
   const isAdmin = currentUser.role === 'admin';
-  const currentId = currentUser.id || currentUser._id;
+  const currentId = currentUser._id;
 
   const fetchUsers = async () => {
     try {

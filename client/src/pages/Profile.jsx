@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Shield, Trash2, LogOut } from 'lucide-react';
 import api from '../api/axios';
@@ -28,7 +29,7 @@ function Profile() {
     setDeleting(true);
     setError('');
     try {
-      await api.delete(`/users/${user.id || user._id}`);
+      await api.delete(`/users/${user._id}`);
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       navigate('/');
@@ -82,9 +83,9 @@ function Profile() {
         </div>
       </div>
 
-      {showConfirm && (
+      {showConfirm && createPortal(
         <div className="modal-overlay" onClick={e => e.target === e.currentTarget && setShowConfirm(false)}>
-          <div className="modal-content">
+          <div className="modal-content fallback-fixed">
             <h2>Delete Account?</h2>
             <p className="confirm-text">
               This will permanently delete your account and cannot be undone.
@@ -104,7 +105,8 @@ function Profile() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

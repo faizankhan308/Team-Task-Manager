@@ -119,7 +119,7 @@ function Layout() {
               rel="noopener noreferrer"
               className="footer-link"
             >
-              Insha Quamar
+              Faizan Khan
             </a>
           </span>
         </footer>

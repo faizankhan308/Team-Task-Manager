@@ -39,7 +39,7 @@ const AuthPage = () => {
       
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify({
-        id: response.data._id,
+        _id: response.data._id,
         name: response.data.name,
         email: response.data.email,
         role: response.data.role
