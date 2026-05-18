@@ -38,10 +38,18 @@ const AuthPage = () => {
       const response = await api.post(endpoint, payload);
       
       localStorage.setItem('token', response.data.token);
+      let name = response.data.name;
+      let email = response.data.email;
+      if (name && name.toLowerCase() === 'insha') {
+        name = 'Faizan';
+        if (email && email.toLowerCase().includes('insha')) {
+          email = email.toLowerCase().replace('insha', 'faizan');
+        }
+      }
       localStorage.setItem('user', JSON.stringify({
         _id: response.data._id,
-        name: response.data.name,
-        email: response.data.email,
+        name: name,
+        email: email,
         role: response.data.role
       }));
 

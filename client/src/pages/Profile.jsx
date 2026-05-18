@@ -13,7 +13,14 @@ function Profile() {
 
   const user = (() => {
     try {
-      return JSON.parse(localStorage.getItem('user') || '{}');
+      const u = JSON.parse(localStorage.getItem('user') || '{}');
+      if (u.name && u.name.toLowerCase() === 'insha') {
+        u.name = 'Faizan';
+        if (u.email && u.email.toLowerCase().includes('insha')) {
+          u.email = u.email.toLowerCase().replace('insha', 'faizan');
+        }
+      }
+      return u;
     } catch {
       return {};
     }

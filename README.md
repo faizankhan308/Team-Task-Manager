@@ -72,8 +72,8 @@ team-task-manager/
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/InshaQuamar/TaskManager.git
-cd TaskManager
+git clone https://github.com/faizankhan308/Team-Task-Manager.git
+cd Team-Task-Manager
 ```
 
 ### 2. Set up the server

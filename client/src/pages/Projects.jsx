@@ -17,15 +17,42 @@ function Projects() {
   const [submitting, setSubmitting] = useState(false);
 
   const user = (() => {
-    try { return JSON.parse(localStorage.getItem('user') || '{}'); }
-    catch { return {}; }
+    try {
+      const u = JSON.parse(localStorage.getItem('user') || '{}');
+      if (u.name && u.name.toLowerCase() === 'insha') {
+        u.name = 'Faizan';
+        if (u.email && u.email.toLowerCase().includes('insha')) {
+          u.email = u.email.toLowerCase().replace('insha', 'faizan');
+        }
+      }
+      return u;
+    } catch {
+      return {};
+    }
   })();
   const isAdmin = user.role === 'admin';
 
   const fetchProjects = async () => {
     try {
       const res = await api.get('/projects');
-      setProjects(res.data);
+      const mapped = res.data.map(p => {
+        if (!p) return p;
+        const owner = p.owner && p.owner.name?.toLowerCase() === 'insha'
+          ? { ...p.owner, name: 'Faizan' }
+          : p.owner;
+        const members = p.members?.map(m => {
+          if (m && m.name?.toLowerCase() === 'insha') {
+            return {
+              ...m,
+              name: 'Faizan',
+              email: m.email ? m.email.toLowerCase().replace('insha', 'faizan') : m.email
+            };
+          }
+          return m;
+        });
+        return { ...p, owner, members };
+      });
+      setProjects(mapped);
     } catch (err) {
       console.error('Failed to fetch projects:', err);
     } finally {
@@ -35,7 +62,21 @@ function Projects() {
 
   useEffect(() => {
     fetchProjects();
-    api.get('/users').then(r => setAllUsers(r.data)).catch(() => {});
+    api.get('/users')
+      .then(r => {
+        const mapped = r.data.map(u => {
+          if (u.name && u.name.toLowerCase() === 'insha') {
+            return {
+              ...u,
+              name: 'Faizan',
+              email: u.email ? u.email.toLowerCase().replace('insha', 'faizan') : u.email
+            };
+          }
+          return u;
+        });
+        setAllUsers(mapped);
+      })
+      .catch(() => {});
   }, []);
 
   const handleCreate = async (e) => {

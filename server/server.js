@@ -3,9 +3,10 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const dotenv = require('dotenv');
+const path = require('path');
 const connectDB = require('./config/db');
 
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '.env') });
 connectDB();
 
 const app = express();

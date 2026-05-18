@@ -11,7 +11,14 @@ function Team() {
 
   const currentUser = (() => {
     try {
-      return JSON.parse(localStorage.getItem('user') || '{}');
+      const u = JSON.parse(localStorage.getItem('user') || '{}');
+      if (u.name && u.name.toLowerCase() === 'insha') {
+        u.name = 'Faizan';
+        if (u.email && u.email.toLowerCase().includes('insha')) {
+          u.email = u.email.toLowerCase().replace('insha', 'faizan');
+        }
+      }
+      return u;
     } catch {
       return {};
     }
@@ -23,7 +30,17 @@ function Team() {
   const fetchUsers = async () => {
     try {
       const res = await api.get('/users');
-      setUsers(res.data);
+      const mapped = res.data.map(u => {
+        if (u.name && u.name.toLowerCase() === 'insha') {
+          return {
+            ...u,
+            name: 'Faizan',
+            email: u.email ? u.email.toLowerCase().replace('insha', 'faizan') : u.email
+          };
+        }
+        return u;
+      });
+      setUsers(mapped);
     } catch {
       setError('Failed to load team members.');
     } finally {

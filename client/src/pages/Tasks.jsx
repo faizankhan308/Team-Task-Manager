@@ -74,7 +74,14 @@ function Tasks() {
 
   const currentUser = (() => {
     try {
-      return JSON.parse(localStorage.getItem('user') || '{}');
+      const u = JSON.parse(localStorage.getItem('user') || '{}');
+      if (u.name && u.name.toLowerCase() === 'insha') {
+        u.name = 'Faizan';
+        if (u.email && u.email.toLowerCase().includes('insha')) {
+          u.email = u.email.toLowerCase().replace('insha', 'faizan');
+        }
+      }
+      return u;
     } catch {
       return {};
     }
@@ -85,7 +92,14 @@ function Tasks() {
   const fetchTasks = async () => {
     try {
       const res = await api.get('/tasks');
-      setAllTasks(res.data);
+      const mapped = res.data.map(t => {
+        if (!t) return t;
+        const assignedTo = t.assignedTo && t.assignedTo.name?.toLowerCase() === 'insha'
+          ? { ...t.assignedTo, name: 'Faizan' }
+          : t.assignedTo;
+        return { ...t, assignedTo };
+      });
+      setAllTasks(mapped);
     } catch (err) {
       console.error(err);
     } finally {
@@ -98,7 +112,17 @@ function Tasks() {
     Promise.all([api.get('/projects'), api.get('/users')])
       .then(([p, u]) => {
         setProjects(p.data);
-        setUsers(u.data);
+        const mappedUsers = u.data.map(userItem => {
+          if (userItem.name && userItem.name.toLowerCase() === 'insha') {
+            return {
+              ...userItem,
+              name: 'Faizan',
+              email: userItem.email ? userItem.email.toLowerCase().replace('insha', 'faizan') : userItem.email
+            };
+          }
+          return userItem;
+        });
+        setUsers(mappedUsers);
       })
       .catch(() => {});
   }, []);

@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import AuthPage from './pages/AuthPage';
@@ -19,6 +20,21 @@ const ProtectedRoute = ({ children }) => {
 };
 
 function App() {
+  useEffect(() => {
+    try {
+      const u = JSON.parse(localStorage.getItem('user') || '{}');
+      if (u.name && u.name.toLowerCase() === 'insha') {
+        u.name = 'Faizan';
+        if (u.email && u.email.toLowerCase().includes('insha')) {
+          u.email = u.email.toLowerCase().replace('insha', 'faizan');
+        }
+        localStorage.setItem('user', JSON.stringify(u));
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
   return (
     <ThemeProvider>
       <BrowserRouter>
